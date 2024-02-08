@@ -22,7 +22,7 @@ noise = SubResource("FastNoiseLite_pwifp")
 [resource]
 render_priority = 0
 shader = ExtResource("1_gb72u")
-shader_parameter/map_size = Vector2(8, 8)
+shader_parameter/map_size = Vector2(6, 6)
 shader_parameter/height_scale = 1.0
 shader_parameter/normal_bias = 0.2
 shader_parameter/heightmap = SubResource("NoiseTexture2D_3kjm0")
