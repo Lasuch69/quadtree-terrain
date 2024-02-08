@@ -2,7 +2,7 @@
 extends MeshInstance3D
 
 const TILE_RESOLUTION: int = 32
-const TILE_SIZE: float = 2.0
+const TILE_SIZE: float = 32.0
 
 const SIZE := Vector2i(3, 3)
 
@@ -11,7 +11,7 @@ var _snapped_pos: Vector2
 
 func _ready() -> void:
 	var vertices = PackedVector3Array()
-	vertices = TerrainMesh.create_mesh(TILE_SIZE, TILE_RESOLUTION)
+	vertices = TerrainMesh.create_center_tile(TILE_SIZE, TILE_RESOLUTION)
 
 	# Initialize the ArrayMesh.
 	var arr_mesh = ArrayMesh.new()
@@ -31,11 +31,6 @@ func _process(delta: float) -> void:
 	
 	_snapped_pos = pos
 	_reload(pos)
-
-func _get_vertex(x: float, y: float) -> Vector3:
-	var half_tile := float(TILE_SIZE) / 2.0
-	var offset := Vector3(half_tile, 0.0, half_tile)
-	return ((Vector3(x, 0.0, y) / TILE_RESOLUTION) * TILE_SIZE) - offset
 
 func _reload(pos: Vector2) -> void:
 	return

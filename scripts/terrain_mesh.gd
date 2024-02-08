@@ -1,35 +1,50 @@
 class_name TerrainMesh
 
-enum Direction {
-	DIRECTION_CENTER,
-	DIRECTION_LEFT,
-	DIRECTION_RIGHT,
-	DIRECTION_UP,
-	DIRECTION_DOWN,
-	DIRECTION_TOP_LEFT,
-	DIRECTION_TOP_RIGHT,
-	DIRECTION_BOTTOM_LEFT,
-	DIRECTION_BOTTOM_RIGHT,
-	DIRECTION_MAX,
-}
-
-static func create_mesh(tile_size: float, tile_resolution: int) -> PackedVector3Array:
+static func create_center_tile(tile_size: float, tile_resolution) -> PackedVector3Array:
 	var vertices = PackedVector3Array()
 	
 	for y: int in tile_resolution:
 		for x: int in tile_resolution:
 			var quad := _get_center_quad()
 			
-			if x == tile_resolution - 1:
-				quad = _get_side_quad()
-				_rotate(quad, -PI / 2)
+			var coords = Vector2i(x, y)
+			_transform(quad, coords, tile_size, tile_resolution)
+			
+			vertices.append_array(quad)
+	
+	return vertices
+
+static func create_side_tile(tile_size: float, tile_resolution) -> PackedVector3Array:
+	var vertices = PackedVector3Array()
+	
+	for y: int in tile_resolution:
+		for x: int in tile_resolution:
+			var quad := _get_center_quad()
 			
 			if y == 0:
 				quad = _get_side_quad()
 			
-			if x == tile_resolution - 1 and y == 0:
+			var coords = Vector2i(x, y)
+			_transform(quad, coords, tile_size, tile_resolution)
+			
+			vertices.append_array(quad)
+	
+	return vertices
+
+static func create_corner_tile(tile_size: float, tile_resolution: int) -> PackedVector3Array:
+	var vertices = PackedVector3Array()
+	
+	for y: int in tile_resolution:
+		for x: int in tile_resolution:
+			var quad := _get_center_quad()
+			
+			if x == 0 and y == 0:
 				quad = _get_corner_quad()
-				_rotate(quad, -PI / 2)
+			elif x == 0:
+				quad = _get_side_quad()
+				_rotate(quad, PI / 2)
+			elif y == 0:
+				quad = _get_side_quad()
 			
 			var coords = Vector2i(x, y)
 			_transform(quad, coords, tile_size, tile_resolution)

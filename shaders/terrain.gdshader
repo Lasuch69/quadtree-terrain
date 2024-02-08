@@ -3,8 +3,8 @@ shader_type spatial;
 uniform sampler2D heightmap: hint_default_black, filter_linear, repeat_disable;
 uniform sampler2D normal: hint_normal, filter_linear, repeat_disable;
 
-uniform vec2 map_size = vec2(8.0, 8.0);
-uniform float height_scale = 1.0;
+uniform vec2 map_size = vec2(256.0, 256.0);
+uniform float height_scale = 16.0;
 uniform float normal_bias = 0.2;
 
 varying vec2 tex_position;

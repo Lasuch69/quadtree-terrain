@@ -14,3 +14,7 @@ config/name="Terrain"
 run/main_scene="res://2d.tscn"
 config/features=PackedStringArray("4.2", "Forward Plus")
 config/icon="res://icon.svg"
+
+[rendering]
+
+anti_aliasing/quality/screen_space_aa=1
