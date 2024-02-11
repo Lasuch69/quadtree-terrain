@@ -112,7 +112,7 @@ static func _get_side_quad() -> PackedVector3Array:
 static func _get_corner_quad() -> PackedVector3Array:
 	var v0 = _vec3(0, 0)
 	var v1 = _vec3(0.5, 0)
-	var v2 = _vec3(0, 0.5) 
+	var v2 = _vec3(0, 0.5)
 	
 	var v3 = _vec3(0.5, 0)
 	var v4 = _vec3(1, 0)

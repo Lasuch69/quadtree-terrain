@@ -1,53 +1,45 @@
 class_name QuadTree
 
-const MAX_DEPTH = 5
+const MAX_DEPTH = 4
 
-static func create_tree(target: Rect2, rect: Rect2) -> Array[Rect2]:
-	var rects: Array[Rect2]
-	_step(target, rect, rects)
+static func create_tree(target: Vector2, rect: Rect2) -> Array[QuadNode]:
+	var nodes: Array[QuadNode]
+	var node := QuadNode.new(rect, 0)
+	_step(target, node, nodes)
 	
-	return rects
+	return nodes
 
-static func _step(target: Rect2, rect: Rect2, rects: Array[Rect2], depth: int = 0) -> void:
-	if depth >= MAX_DEPTH or !rect.intersects(target):
+static func _step(target: Vector2, node: QuadNode, nodes: Array[QuadNode]) -> void:
+	if node.depth >= MAX_DEPTH:
 		return
 	
-	var new_rects := _subdivide(rect)
-	rects.append_array(new_rects)
+	var distance: float = target.distance_to(node.rect.get_center())
+	var exponent: float = (node.depth / 5.0) + 1.0
+	var cost: float = pow(distance, exponent)
 	
-	for new_rect: Rect2 in new_rects:
-		var distance: float = target.get_center().distance_to(new_rect.get_center())
-		var exponent: float = (depth / 4.0) + 1.0
-		var cost: float = pow(distance, exponent)
-		
-		if cost > 100.0:
-			continue
-		
-		_step(target, new_rect, rects, depth + 1)
+	if cost > 150.0:
+		return
+	
+	var new_nodes := _subdivide(node)
+	nodes.append_array(new_nodes)
+	nodes.erase(node)
+	
+	for new_node: QuadNode in new_nodes:
+		_step(target, new_node, nodes)
 
-static func _subdivide(rect: Rect2) -> Array[Rect2]:
-	var rects: Array[Rect2]
+static func _subdivide(node: QuadNode) -> Array[QuadNode]:
+	var new_nodes: Array[QuadNode]
 	
 	for i: int in 4:
-		rects.append(_get_child_rect(rect, i))
+		var rect = _get_node_rect(node.rect, i)
+		var depth = node.depth + 1
+		
+		var new_node := QuadNode.new(rect, depth)
+		new_nodes.append(new_node)
 	
-	return rects
+	return new_nodes
 
-static func _get_child_corner(rect: Rect2, point: Vector2) -> Corner:
-	var center := rect.get_center()
-	
-	if point.y < center.y:
-		if point.x < center.x:
-			return CORNER_TOP_LEFT
-		else:
-			return CORNER_TOP_RIGHT
-	else:
-		if point.x < center.x:
-			return CORNER_BOTTOM_LEFT
-		else:
-			return CORNER_BOTTOM_RIGHT
-
-static func _get_child_rect(rect: Rect2, direction: Corner) -> Rect2:
+static func _get_node_rect(rect: Rect2, direction: Corner) -> Rect2:
 	var new_size := rect.size / 2.0
 	var new_position := rect.position
 	

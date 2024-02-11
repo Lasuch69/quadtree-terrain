@@ -1,39 +1,96 @@
 @tool
-extends MeshInstance3D
+extends Node3D
 
-const TILE_RESOLUTION: int = 32
-const TILE_SIZE: float = 32.0
+const TERRAIN_MATERIAL = preload("res://shaders/terrain.tres")
 
-const SIZE := Vector2i(3, 3)
+const TILE_RESOLUTION: int = 48
+const TILE_SIZE: float = 24.0
+const MAX_LODS: int = 5
+
+const MAP_SIZE: int = 5
+
+@export var update: bool = true
 
 @onready var _camera: Camera3D = EditorInterface.get_editor_viewport_3d().get_camera_3d()
-var _snapped_pos: Vector2
+
+var _lods: Array[Dictionary]
+var _instances: Array[MeshInstance3D]
 
 func _ready() -> void:
-	var vertices = PackedVector3Array()
-	vertices = TerrainMesh.create_center_tile(TILE_SIZE, TILE_RESOLUTION)
+	_lods = _generate_lods()
 
-	# Initialize the ArrayMesh.
-	var arr_mesh = ArrayMesh.new()
-	var arrays = []
-	arrays.resize(Mesh.ARRAY_MAX)
-	arrays[Mesh.ARRAY_VERTEX] = vertices
+	for y: int in MAP_SIZE:
+		for x: int in MAP_SIZE:
+			var pos = Vector2(x, y) - (Vector2(MAP_SIZE, MAP_SIZE) / 2.0).floor()
+
+			var mesh_instance := MeshInstance3D.new()
+			mesh_instance.material_override = TERRAIN_MATERIAL
+			mesh_instance.position = Vector3(pos.x, 0.0, pos.y) * TILE_SIZE
+			
+			mesh_instance.mesh = _lods[0][Vector2i.ZERO]
+			mesh_instance.custom_aabb = AABB(Vector3(-12, 0, -12), Vector3(24, 16, 24))
+			
+			add_child(mesh_instance)
+			_instances.append(mesh_instance)
 	
-	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
-	mesh = arr_mesh
+	_check_position()
 
 func _process(delta: float) -> void:
-	var pos := Vector2(_camera.position.x + TILE_SIZE / 2, _camera.position.z + TILE_SIZE / 2) / TILE_SIZE
+	_check_position()
+
+func _generate_lods() -> Array[Dictionary]:
+	var lods: Array[Dictionary] = []
+	
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	
+	var resolution: int = TILE_RESOLUTION
+	
+	while lods.size() < MAX_LODS:
+		var lod := {}
+		
+		for y: int in range(-1, 2):
+			for x: int in range(-1, 2):
+				var direction := Vector2i(x, y)
+				
+				arrays[Mesh.ARRAY_VERTEX] = TerrainMesh.create_center_tile(TILE_SIZE, resolution)
+				
+				if direction == Vector2i.UP:
+					arrays[Mesh.ARRAY_VERTEX] = TerrainMesh.create_side_tile(TILE_SIZE, resolution)
+				
+				var mesh := ArrayMesh.new()
+				mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+				
+				lod[direction] = mesh
+		
+		lods.append(lod)
+		resolution /= 2
+	
+	return lods
+
+func _check_position() -> void:
+	var pos := Vector2(_camera.global_position.x, _camera.global_position.z)
+	pos += Vector2(TILE_SIZE, TILE_SIZE) / 2.0
+	pos /= TILE_SIZE
 	pos = pos.floor()
 	
-	if _snapped_pos.is_equal_approx(pos):
-		return
-	
-	_snapped_pos = pos
-	_reload(pos)
+	if update:
+		_reload_tiles(pos)
 
-func _reload(pos: Vector2) -> void:
-	return
+func _reload_tiles(camera_tile: Vector2i) -> void:
+	var size := Vector2i(MAP_SIZE, MAP_SIZE)
+	var rect := Rect2i(-size / 2, size)
 	
-	print(pos)
-	print("Reloading terrain...")
+	var tiles := TerrainLOD.get_lods(camera_tile, rect)
+	
+	for i: int in _instances.size():
+		var tile = tiles[i]
+		
+		var direction := Vector2i(tile.x, tile.y)
+		var lod = mini(tile.z, MAX_LODS - 1)
+		
+		if lod == 0:
+			_instances[i].mesh = _lods[0][Vector2i.ZERO]
+			continue
+		
+		_instances[i].mesh = _lods[lod][direction]
