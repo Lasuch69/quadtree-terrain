@@ -4,3 +4,6 @@
 
 [node name="QuadTreeTest" type="Node2D"]
 script = ExtResource("1_rvofw")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(256, 256)

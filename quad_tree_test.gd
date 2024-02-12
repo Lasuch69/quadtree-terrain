@@ -13,7 +13,7 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 func _draw() -> void:
-	var point = get_local_mouse_position()
+	var point = get_local_mouse_position().snapped(Vector2(16.0, 16.0))
 	
 	var grid: Array[Rect2]
 	var tree: Array[QuadNode]
@@ -50,8 +50,6 @@ func _draw() -> void:
 			draw_circle(neighbour_node.rect.get_center(), 3.0, color)
 		
 		draw_rect(node.rect, color, false)
-	
-	#draw_rect(target, Color.RED, false)
 
 func is_neighbour(other_node: QuadNode, node: QuadNode) -> bool:
 	var is_neighbour := false

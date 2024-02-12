@@ -20,6 +20,6 @@ render_priority = 0
 shader = ExtResource("1_gb72u")
 shader_parameter/map_size = Vector2(250, 250)
 shader_parameter/height_scale = 10.0
-shader_parameter/normal_bias = 0.15
+shader_parameter/normal_bias = 0.2
 shader_parameter/heightmap = SubResource("NoiseTexture2D_3kjm0")
 shader_parameter/normal = SubResource("NoiseTexture2D_py8je")
